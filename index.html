@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legend Universe Quiz — Inner Villain Works</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #faf9f7; --bg2: #f2f0eb; --bg3: #e8e5de;
+  --text: #1a1916; --text2: #5a5750; --text3: #9a9690;
+  --border: rgba(26,25,22,0.12); --border2: rgba(26,25,22,0.22);
+  --accent: #2c2a26;
+  --gold: #8a6a2a; --gold-bg: #fdf8ee; --gold-border: #e8d4a0;
+  --legend: #3d5a3e; --legend-bg: #eef5ee; --legend-border: #b8d4b8;
+  --skill: #1a4a6b; --skill-bg: #eef4fb; --skill-border: #a8c8e8;
+  --radius: 10px; --radius-sm: 6px;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system,'Segoe UI',sans-serif; min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:2rem 1rem 4rem; }
+.wrap { width:100%; max-width:640px; }
+.screen { display:none; }
+.screen.active { display:block; }
+
+.intro-eyebrow { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); margin-bottom:1rem; }
+.intro-title { font-size:28px; font-weight:600; line-height:1.25; color:var(--text); margin-bottom:1rem; }
+.intro-body { font-size:15px; line-height:1.75; color:var(--text2); margin-bottom:1.75rem; }
+.intro-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:1.75rem; }
+.stat-card { background:var(--bg2); border-radius:var(--radius-sm); padding:14px; text-align:center; }
+.stat-n { font-size:20px; font-weight:600; color:var(--text); }
+.stat-l { font-size:11px; color:var(--text3); margin-top:2px; }
+
+.progress-wrap { margin-bottom:1.25rem; }
+.progress-meta { display:flex; justify-content:space-between; font-size:12px; color:var(--text3); margin-bottom:6px; }
+.progress-track { height:3px; background:var(--border); border-radius:2px; }
+.progress-fill { height:3px; border-radius:2px; background:var(--gold); transition:width 0.35s ease; }
+.phase-badge { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:500; padding:4px 10px; border-radius:20px; margin-bottom:0.75rem; background:var(--bg2); color:var(--text2); border:0.5px solid var(--border); }
+.phase-badge.detecting { background:var(--gold-bg); color:var(--gold); border:0.5px solid var(--gold-border); }
+.phase-badge.narrowing { background:var(--legend-bg); color:var(--legend); border:0.5px solid var(--legend-border); }
+.phase-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.universe-signal { margin-bottom:1.25rem; }
+.universe-signal-label { font-size:11px; color:var(--text3); margin-bottom:6px; }
+.signal-rows { display:flex; flex-direction:column; gap:5px; }
+.signal-row { display:flex; align-items:center; gap:8px; }
+.signal-name { font-size:11px; color:var(--text2); min-width:80px; }
+.signal-track { flex:1; height:4px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+.signal-fill { height:100%; border-radius:2px; background:var(--gold); transition:width 0.4s ease; }
+.signal-pct { font-size:11px; color:var(--text3); min-width:28px; text-align:right; }
+
+.q-text { font-size:17px; font-weight:500; line-height:1.5; color:var(--text); margin-bottom:0.4rem; }
+.q-hint { font-size:12px; color:var(--text3); margin-bottom:0.5rem; }
+.sel-count { font-size:12px; color:var(--text3); margin-bottom:1.1rem; }
+.options { display:flex; flex-direction:column; gap:7px; margin-bottom:1.5rem; }
+.opt { display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:0.5px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; font-size:14px; line-height:1.5; color:var(--text2); background:white; text-align:left; width:100%; font-family:inherit; transition:all 0.1s; }
+.opt:hover { border-color:var(--border2); background:var(--bg); }
+.opt.sel-1 { border-color:var(--accent); background:var(--accent); color:white; }
+.opt.sel-2 { border-color:#6b5a3e; background:#6b5a3e; color:white; }
+.opt.sel-3 { border-color:#a08060; background:#a08060; color:white; }
+.sel-badge { width:20px; height:20px; min-width:20px; border-radius:50%; border:1.5px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; opacity:0.55; flex-shrink:0; margin-top:1px; }
+.opt.sel-1 .sel-badge,.opt.sel-2 .sel-badge,.opt.sel-3 .sel-badge { opacity:1; background:rgba(255,255,255,0.2); border-color:white; color:white; }
+.opt.single-sel { border-color:var(--gold); background:var(--gold-bg); color:var(--gold); }
+.opt.single-sel .sel-badge { opacity:1; }
+.opt.mod-sel { border-color:var(--legend); background:var(--legend-bg); color:var(--legend); }
+.opt.mod-sel .sel-badge { opacity:1; }
+
+.nav { display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem; }
+.btn { padding:10px 22px; border-radius:var(--radius-sm); border:0.5px solid var(--border2); background:white; font-size:14px; color:var(--text); cursor:pointer; font-family:inherit; font-weight:500; }
+.btn:hover { background:var(--bg2); }
+.btn.primary { background:var(--accent); color:white; border-color:var(--accent); }
+.btn.primary:hover { opacity:0.88; }
+.btn:disabled { opacity:0.3; cursor:not-allowed; }
+.btn.full { width:100%; text-align:center; padding:13px; margin-top:0.5rem; }
+
+.universe-banner { padding:14px 16px; border-radius:var(--radius-sm); background:var(--gold-bg); border:0.5px solid var(--gold-border); margin-bottom:1.5rem; }
+.universe-banner-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+.universe-banner-name { font-size:18px; font-weight:600; color:var(--text); }
+.universe-banner-legend { font-size:13px; color:var(--text2); margin-top:2px; }
+.skill-intro-title { font-size:20px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.skill-intro-sub { font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:1.5rem; }
+
+.result-eyebrow { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); margin-bottom:6px; }
+.result-name { font-size:30px; font-weight:700; color:var(--text); margin-bottom:4px; line-height:1.2; }
+.result-legend { font-size:15px; color:var(--text2); margin-bottom:1rem; font-weight:500; }
+.result-level-badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; margin-bottom:1.5rem; }
+.level-entry { background:var(--bg2); color:var(--text2); border:0.5px solid var(--border2); }
+.level-developing { background:var(--skill-bg); color:var(--skill); border:0.5px solid var(--skill-border); }
+.level-legend { background:var(--gold-bg); color:var(--gold); border:0.5px solid var(--gold-border); }
+.divider { height:0.5px; background:var(--border); margin:1.25rem 0; }
+.result-label { font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--text3); margin-bottom:5px; }
+.result-body { font-size:14px; line-height:1.7; color:var(--text); margin-bottom:1.25rem; }
+
+.skills-list { margin-bottom:1.5rem; }
+.skill-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:0.5px solid var(--border); }
+.skill-item:last-child { border-bottom:none; }
+.skill-dot { width:8px; height:8px; min-width:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.skill-dot.acquired { background:var(--legend); }
+.skill-dot.developing { background:var(--gold); }
+.skill-dot.unacquired { background:var(--bg3); border:1px solid var(--border2); }
+.skill-text { font-size:13px; color:var(--text); line-height:1.5; }
+.skill-status { font-size:11px; margin-top:2px; }
+.skill-status.acquired { color:var(--legend); }
+.skill-status.developing { color:var(--gold); }
+.skill-status.unacquired { color:var(--text3); }
+
+.arc-breakdown { margin-bottom:1.5rem; }
+.arc-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.arc-lbl { font-size:12px; color:var(--text2); min-width:130px; }
+.arc-track { flex:1; height:6px; background:var(--bg3); border-radius:3px; overflow:hidden; }
+.arc-fill { height:100%; border-radius:3px; background:var(--gold); }
+.arc-fill.is-top { background:var(--accent); }
+.arc-pct { font-size:12px; color:var(--text3); min-width:32px; text-align:right; }
+
+.mod-pills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1rem; }
+.mod-pill { font-size:12px; padding:4px 10px; border-radius:20px; background:var(--legend-bg); color:var(--legend); border:0.5px solid var(--legend-border); }
+
+.email-gate { background:var(--bg2); border:0.5px solid var(--border); border-radius:var(--radius); padding:1.5rem; margin-top:1.5rem; }
+.email-gate-title { font-size:16px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.email-gate-body { font-size:13px; color:var(--text2); line-height:1.6; margin-bottom:1.25rem; }
+.email-row { display:flex; gap:8px; }
+.name-input,.email-input { padding:10px 14px; border:0.5px solid var(--border2); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; background:white; color:var(--text); }
+.name-input { width:100%; margin-bottom:8px; }
+.email-input { flex:1; }
+.name-input:focus,.email-input:focus { outline:none; border-color:var(--accent); }
+.kit-output { background:#f0f4f0; border:0.5px solid #c0d4c0; border-radius:var(--radius-sm); padding:12px 14px; margin-top:1rem; font-size:12px; color:#3a5a3a; line-height:1.7; display:none; }
+.kit-output strong { font-weight:600; display:block; margin-bottom:4px; }
+
+.retake-section { margin-top:1.5rem; padding-top:1.25rem; border-top:0.5px solid var(--border); }
+.retake-title { font-size:14px; font-weight:500; color:var(--text); margin-bottom:0.5rem; }
+.retake-body { font-size:13px; color:var(--text2); margin-bottom:0.75rem; }
+.retake-link { display:inline-block; font-size:13px; color:var(--gold); cursor:pointer; background:none; border:none; font-family:inherit; padding:0; }
+.retake-link:hover { text-decoration:underline; }
+
+@media (max-width:480px) {
+  .intro-stats { grid-template-columns:1fr 1fr; }
+  .email-row { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- INTRO -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-eyebrow">Inner Villain Works</div>
+  <div class="intro-title">Which Legend Universe do you belong in?</div>
+  <div class="intro-body">The Legend system is the other side of the Inner Villain. Instead of entering through shadow work, you enter through challenge and skill — each universe has a domain to master and a Legend waiting on the other side.<br><br>This quiz detects which universe is actually calling you, based on your patterns, friction points, and desires — not which one you think sounds best.</div>
+  <div class="intro-stats">
+    <div class="stat-card"><div class="stat-n">9</div><div class="stat-l">universes</div></div>
+    <div class="stat-card"><div class="stat-n">~7 min</div><div class="stat-l">to complete</div></div>
+    <div class="stat-card"><div class="stat-n">3</div><div class="stat-l">phases</div></div>
+  </div>
+  <button class="btn primary full" onclick="startQuiz()">Find my universe</button>
+</div>
+
+<!-- DETECTION QUIZ -->
+<div class="screen" id="screen-quiz">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="q-counter">Question 1 of 6</span>
+      <span id="phase-label">Detecting</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  </div>
+  <div id="phase-badge" class="phase-badge detecting"><div class="phase-dot"></div><span id="phase-text">Finding your universe</span></div>
+  <div id="universe-signal" class="universe-signal" style="display:none">
+    <div class="universe-signal-label">Leading signals</div>
+    <div class="signal-rows" id="signal-rows"></div>
+  </div>
+  <div class="q-text" id="q-text"></div>
+  <div class="q-hint">Select up to 3 — first = strongest.</div>
+  <div class="sel-count" id="sel-count">0 of 3 selected</div>
+  <div class="options" id="options"></div>
+  <div class="nav">
+    <button class="btn" id="btn-back" onclick="goBack()" disabled>Back</button>
+    <button class="btn primary" id="btn-next" onclick="goNext()" disabled>Next</button>
+  </div>
+</div>
+
+<!-- DISAMBIGUATION -->
+<div class="screen" id="screen-disambig">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="d-counter">Narrowing 1 of 2</span>
+      <span>Focused</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="d-prog" style="width:50%"></div></div>
+  </div>
+  <div class="phase-badge narrowing"><div class="phase-dot"></div><span>Narrowing your universe</span></div>
+  <div class="q-text" id="d-q-text"></div>
+  <div class="q-hint" style="margin-bottom:1.1rem">Select one.</div>
+  <div class="options" id="d-options"></div>
+  <div class="nav">
+    <button class="btn" id="d-btn-back" onclick="dGoBack()" disabled>Back</button>
+    <button class="btn primary" id="d-btn-next" onclick="dGoNext()" disabled>Next</button>
+  </div>
+</div>
+
+<!-- SKILL ASSESSMENT -->
+<div class="screen" id="screen-skill">
+  <div class="universe-banner">
+    <div class="universe-banner-label">Your universe</div>
+    <div class="universe-banner-name" id="sk-universe-name"></div>
+    <div class="universe-banner-legend" id="sk-legend-name"></div>
+  </div>
+  <div class="skill-intro-title">Now let's map your skills</div>
+  <div class="skill-intro-sub" id="sk-sub"></div>
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="sk-counter">Skill question 1 of 4</span></div>
+    <div class="progress-track"><div class="progress-fill" id="sk-prog" style="width:25%"></div></div>
+  </div>
+  <div class="q-text" id="sk-q-text"></div>
+  <div class="q-hint" style="margin-bottom:1.1rem">Select one.</div>
+  <div class="options" id="sk-options"></div>
+  <div class="nav">
+    <button class="btn" id="sk-btn-back" onclick="skGoBack()" disabled>Back</button>
+    <button class="btn primary" id="sk-btn-next" onclick="skGoNext()" disabled>Next</button>
+  </div>
+</div>
+
+<!-- MODALITIES -->
+<div class="screen" id="screen-modalities">
+  <div class="universe-banner">
+    <div class="universe-banner-label">Your universe</div>
+    <div class="universe-banner-name" id="mod-universe-name"></div>
+    <div class="universe-banner-legend" id="mod-legend-name"></div>
+  </div>
+  <div class="q-text">Which of these have you worked with — or feel genuinely drawn to?</div>
+  <div style="font-size:13px;color:var(--text2);line-height:1.6;margin:0.5rem 0 1.25rem;">Select all that apply. None is a perfectly valid answer.</div>
+  <div class="options" id="mod-options" style="gap:6px;margin-bottom:1.5rem"></div>
+  <div class="nav">
+    <button class="btn" onclick="modGoBack()">Back</button>
+    <button class="btn primary" onclick="modGoNext()">See my results</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="screen-result">
+  <div class="result-eyebrow" id="r-eyebrow"></div>
+  <div class="result-name" id="r-universe-name"></div>
+  <div class="result-legend" id="r-legend-name"></div>
+  <div id="r-level-badge" class="result-level-badge"></div>
+  <div class="result-label">Your universe challenge</div>
+  <div class="result-body" id="r-challenge"></div>
+  <div class="result-label">The core wound underneath it</div>
+  <div class="result-body" id="r-wound"></div>
+  <div class="result-label">What you're actually seeking</div>
+  <div class="result-body" id="r-desire"></div>
+  <div class="result-label">The great truth of this arc</div>
+  <div class="result-body" id="r-truth"></div>
+  <div class="divider"></div>
+  <div class="result-label">Your skill map</div>
+  <div class="skills-list" id="r-skills"></div>
+  <div id="r-mod-section" style="display:none">
+    <div class="divider"></div>
+    <div class="result-label">Modalities and practices in your field</div>
+    <div class="mod-pills" id="r-mod-pills"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="result-label">Your universe breakdown</div>
+  <div class="arc-breakdown" id="r-breakdown"></div>
+
+  <div class="email-gate">
+    <div class="email-gate-title">Get your full Legend profile</div>
+    <div class="email-gate-body">Your universe deep-dive, the specific skills to develop next, and the modalities and teachers that belong in your arc — delivered to your inbox.</div>
+    <input class="name-input" id="gate-name" type="text" placeholder="First name">
+    <div class="email-row">
+      <input class="email-input" id="gate-email" type="email" placeholder="Your email address">
+      <button class="btn primary" onclick="submitEmail()">Send it</button>
+    </div>
+    <div class="kit-output" id="kit-output"></div>
+  </div>
+
+  <div class="retake-section">
+    <div class="retake-title">Want to explore further?</div>
+    <div class="retake-body">If this universe feels accurate, consider exploring the Inner Villain quiz to see which shadow pattern lives on the other side of your legend work.</div>
+    <button class="retake-link" onclick="restartQuiz()">↺ Retake this quiz</button>
+  </div>
+</div>
+
+</div>
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const universes = [
+  { id:1, arc:'Arc 1 — Belonging', name:'The Universe of Belonging', legend:'The Equalizer',
+    challenge:'Master belonging without losing yourself to role, approval, or hierarchy. Learn to read power dynamics and hold your ground inside systems designed to rank you.',
+    wound:'I have to earn my place, or disappear to keep it.',
+    desire:'To be accepted as-is, without performing, shrinking, or proving.',
+    truth:'We move along the same axis, each with our own story.',
+    skills:[
+      'Reading status without being ruled by it',
+      'Using hierarchy as a tool, not a trap',
+      'Holding connection without self-erasure',
+      'Creating order that distributes power',
+      'Self-worth architecture independent of role',
+      'Fluency with power dynamics and consent'
+    ],
+    modalities:[
+      'Energy healing (Reiki, Pranic, or similar)',
+      'Somatic boundary work',
+      'Non-Violent Communication (NVC)',
+      'Authentic Relating or circling',
+      'Consent and power dynamics frameworks',
+      'Community organising or co-op structures',
+      'Attachment theory work',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When you walk into a room where there is an obvious hierarchy, you:',
+        opts:[
+          {text:'Immediately feel the pressure to prove yourself or disappear',level:0},
+          {text:'Notice the dynamics but find yourself reacting to them unconsciously',level:1},
+          {text:'Read the room clearly and choose how to engage from a grounded place',level:2}
+        ]},
+      { q:'When someone in authority treats you as less than, you:',
+        opts:[
+          {text:'Shrink, comply, or replay it for days',level:0},
+          {text:'Feel it strongly but manage to hold your position most of the time',level:1},
+          {text:'Name it clearly and choose your response — from strength, not reactivity',level:2}
+        ]},
+      { q:'Your relationship to your own worth in professional or social spaces:',
+        opts:[
+          {text:'Contingent — it rises and falls depending on how others treat you',level:0},
+          {text:'Mostly stable but certain dynamics or people can destabilise it',level:1},
+          {text:'Anchored from within — external hierarchy rarely moves it',level:2}
+        ]},
+      { q:'When it comes to helping others belong or gain access:',
+        opts:[
+          {text:'You focus on your own belonging first — there is not much left for others',level:0},
+          {text:'You do it naturally but still give more access to those who already have it',level:1},
+          {text:'You actively create equitable conditions and redistribute access consciously',level:2}
+        ]}
+    ]},
+
+  { id:2, arc:'Arc 2 — Energy', name:'The Universe of Energy', legend:'The Nourisher',
+    challenge:'Master the full cycle of giving and receiving without martyrdom or collapse. Learn where energy actually comes from and stay in flow rather than hoarding or hemorrhaging.',
+    wound:'My energy is always someone else\'s resource first.',
+    desire:'To feel genuinely replenished, and to give freely without resentment or collapse.',
+    truth:'True generosity honours both the giver and the gift.',
+    skills:[
+      'Recognising your real energy limits before depletion',
+      'Receiving without guilt or suspicion',
+      'Co-regulation with others',
+      'Giving from fullness, not fear of debt',
+      'Working with energy as a malleable resource',
+      'Identifying abundance sources beyond people'
+    ],
+    modalities:[
+      'Breathwork (Holotropic, Rebirthing, or similar)',
+      'Qi Gong or Tai Chi',
+      'Human Design (as energy management)',
+      'Nervous system regulation or polyvagal work',
+      'Acupuncture or Traditional Chinese Medicine',
+      'Law of Attraction or manifestation practices',
+      'Reiki or energy transmission work',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When you need rest, you:',
+        opts:[
+          {text:'Push through or wait until you collapse — resting feels like failure',level:0},
+          {text:'Allow yourself rest but usually feel guilty about it',level:1},
+          {text:'Recognise the limit early and tend to yourself without self-judgment',level:2}
+        ]},
+      { q:'When someone offers you genuine help or support, you:',
+        opts:[
+          {text:'Deflect, minimise, or find a reason to decline',level:0},
+          {text:'Accept it but feel slightly uncomfortable or indebted',level:1},
+          {text:'Receive it openly and let it actually land',level:2}
+        ]},
+      { q:'Your awareness of what drains and replenishes your energy:',
+        opts:[
+          {text:'Vague — you mostly notice it when you are already in deficit',level:0},
+          {text:'Developing — you know your patterns but do not always act on them',level:1},
+          {text:'Clear — you actively manage your energy like a resource',level:2}
+        ]},
+      { q:'After giving significantly to others, you:',
+        opts:[
+          {text:'Feel resentful, drained, or quietly wait for reciprocation',level:0},
+          {text:'Usually feel okay but sometimes catch yourself tracking the return',level:1},
+          {text:'Feel nourished by the giving itself — the return is not the point',level:2}
+        ]}
+    ]},
+
+  { id:3, arc:'Arc 3 — Resources', name:'The Universe of Resources', legend:'The Inventor',
+    challenge:'Master the creation and distribution of material and social resources. Shift from transactional thinking to strategic thinking — from quid pro quo to pro bono publico.',
+    wound:'There is not enough, and I might lose access to what I have.',
+    desire:'To build something that creates abundance for many, not just survival for themselves.',
+    truth:'True invention is generosity disguised as ingenuity.',
+    skills:[
+      'Honesty about what you have and what you need',
+      'Influencing opinion without distorting truth',
+      'Building access channels for others',
+      'Shifting from transactional to strategic thinking',
+      'Developing a clean relationship with money and wealth',
+      'Cultivating helpful people and strategic allies'
+    ],
+    modalities:[
+      'Money mindset or wealth psychology coaching',
+      'Feng Shui (wealth and helpful people sectors)',
+      'EFT tapping for money blocks',
+      'Business strategy or offer architecture',
+      'Abundance coaching or prosperity frameworks',
+      'Grant writing or resource access work',
+      'Solidarity economy or cooperative models',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'Your instinct when resources feel scarce:',
+        opts:[
+          {text:'Protect what you have, work harder, or quietly envy those who have more',level:0},
+          {text:'Notice the scarcity reflex but catch yourself before it drives the decision',level:1},
+          {text:'Look for the channel or the connection that opens flow — strategy over effort',level:2}
+        ]},
+      { q:'When you receive something you did not explicitly earn:',
+        opts:[
+          {text:'It feels uncomfortable, undeserved, or suspicious',level:0},
+          {text:'You can accept it but carry a quiet sense of obligation',level:1},
+          {text:'You receive it as part of a larger flow you trust and contribute to',level:2}
+        ]},
+      { q:'Your relationship to money and material success:',
+        opts:[
+          {text:'Charged — there is a moral weight to it that makes accumulation feel complicated',level:0},
+          {text:'Improving — you are working on the story but old patterns still surface',level:1},
+          {text:'Clean — you see it as a tool and use it to create access for others',level:2}
+        ]},
+      { q:'When you think about building wealth or resources:',
+        opts:[
+          {text:'The primary lens is fairness — who earned what, who is getting their share',level:0},
+          {text:'You think about your needs and sometimes those of others, in roughly that order',level:1},
+          {text:'You think in systems — how does this create channels that serve many',level:2}
+        ]}
+    ]},
+
+  { id:4, arc:'Arc 4 — Growth', name:'The Universe of Growth', legend:'The Traveller',
+    challenge:'Master individuation: commit, mature, and move through the world with self-sufficiency without losing your capacity for wonder or love.',
+    wound:'I don\'t know who I am without a story, a system, or someone to hold me.',
+    desire:'To know themselves so completely they can move through any terrain without losing the thread — and to be loved without performing growth to earn it.',
+    truth:'The feet of flight are now used for the travel to maturity.',
+    skills:[
+      'Rooting into commitment without rigidity',
+      'Surviving uncertainty without fabricating a story',
+      'Loving without requiring the other to parent you',
+      'Building a self that functions across contexts',
+      'Working with projection and the mirror dynamic',
+      'Exiting victim and rescuer patterns'
+    ],
+    modalities:[
+      'Inner child work',
+      'IFS (Internal Family Systems) or parts work',
+      'Narrative therapy or story re-authoring',
+      'Drama Triangle or victim mentality work',
+      'Mirror work (self-perception and projection)',
+      'Vision boarding or future self work',
+      'Enneagram (as individuation tool)',
+      'Human Design (as identity map)',
+      'Numerology or astrology (life path / Saturn return)',
+      'Luck work or synchronicity practices',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When you encounter a new framework for understanding yourself:',
+        opts:[
+          {text:'You adopt it with excitement and it becomes central to how you explain yourself',level:0},
+          {text:'You engage with it curiously but are aware of the tendency to over-identify',level:1},
+          {text:'You extract what is useful and leave what would become a cage',level:2}
+        ]},
+      { q:'Your relationship to commitment — in relationships, work, or direction:',
+        opts:[
+          {text:'It feels like a cage — freedom and possibility exist more in the threshold',level:0},
+          {text:'You can commit but you track the cost of it and sometimes resist mid-stream',level:1},
+          {text:'Commitment feels like a container — it is where depth actually happens',level:2}
+        ]},
+      { q:'When you reflect on why you do your growth work:',
+        opts:[
+          {text:'Honestly, part of it is to be interesting enough to attract or keep someone',level:0},
+          {text:'Mostly genuine but there is some awareness of audience even in private',level:1},
+          {text:'The work is yours — it would happen regardless of who is watching',level:2}
+        ]},
+      { q:'Your sense of who you are when you are in an unfamiliar environment:',
+        opts:[
+          {text:'Fragile — you need familiar mirrors, structures, or people to feel like yourself',level:0},
+          {text:'Mostly stable but certain contexts or people can throw you',level:1},
+          {text:'Portable — your core travels with you regardless of the context',level:2}
+        ]}
+    ]},
+
+  { id:5, arc:'Arc 5 — Balance', name:'The Universe of Balance', legend:'The Balancer',
+    challenge:'Master the integration of intellect and emotion. Use your sensitivity and analytical power together without one suppressing or destroying the other.',
+    wound:'My feelings are dangerous. My intellect is the only safe part of me.',
+    desire:'To think and feel at the same time without one destroying the other or the relationship.',
+    truth:'You can unlock great mysteries with a balance of emotion and intellect.',
+    skills:[
+      'Reading complex information with emotional nuance',
+      'Using intellect to clarify, not suppress',
+      'Setting limits from values rather than fear of feeling',
+      'Letting passion enter logic-dominated spaces safely',
+      'Using stoic practice as regulation, not suppression',
+      'Accessing belief and memory beneath the analytical mind'
+    ],
+    modalities:[
+      'Stoicism or philosophical self-inquiry',
+      'Mind mapping or systems thinking',
+      'Hypnotherapy or trance work',
+      'CBT or ACT frameworks',
+      'Emotional intelligence (EQ) coaching',
+      'Vipassana or mindfulness practice',
+      'Neurofeedback or brainwave work',
+      'Memory reconsolidation or belief change work',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When strong emotion arises in a high-stakes context:',
+        opts:[
+          {text:'You suppress it, intellectualise, or find a way to make the feeling disappear',level:0},
+          {text:'You are aware of it and manage it — but the managing takes most of your energy',level:1},
+          {text:'You can hold the feeling and the task simultaneously without either collapsing',level:2}
+        ]},
+      { q:'The relationship between what you know and what you feel:',
+        opts:[
+          {text:'Mostly sequential — you process intellectually first, feel later if at all',level:0},
+          {text:'Sometimes integrated — the two can coexist in good conditions',level:1},
+          {text:'Genuinely unified — your thinking is emotionally informed and your feeling is clear',level:2}
+        ]},
+      { q:'When someone close to you says you have "gone cold" or are "in your head":',
+        opts:[
+          {text:'It is accurate — distance is often your first response to intensity',level:0},
+          {text:'It happens sometimes and you are working on catching it earlier',level:1},
+          {text:'It rarely happens now — you can stay present with intensity without shutting down',level:2}
+        ]},
+      { q:'There is a part of your inner life you have not brought into your work. How true is this?',
+        opts:[
+          {text:'Very true — it is kept deliberately separate and may not be safe to integrate',level:0},
+          {text:'Partially true — you are in the process of integrating it but it is slow work',level:1},
+          {text:'No longer true — your full range is available and it makes the work richer',level:2}
+        ]}
+    ]},
+
+  { id:6, arc:'Arc 6 — Change', name:'The Universe of Change', legend:'The Healer',
+    challenge:'Master transformation: move through endings, loss, and upheaval without calcifying around safety or catastrophizing the unknown. Develop a conscious relationship with mortality and impermanence.',
+    wound:'Change destroys what matters. Endings mean something was wrong with me, or with us.',
+    desire:'To move through transformation without losing the people, community, or belonging that makes change survivable.',
+    truth:'A healthy life has both pain and wellness. Living fully is worth the risk.',
+    skills:[
+      'Facing endings without assigning blame',
+      'Moving through fear of loss without numbing',
+      'Building loyalty without requiring permanence',
+      'Seeing through divisiveness and cult-adjacent dynamics',
+      'Holding neutrality without spiritual bypassing',
+      'Risk mapping and holding multiple timelines simultaneously'
+    ],
+    modalities:[
+      'Grief coaching or death doula work',
+      'Psychedelic-assisted therapy or integration coaching',
+      'EMDR or trauma processing',
+      'Shamanic journeywork',
+      'Tarot or oracle work (transformation archetypes)',
+      'Cult recovery or high-control group exit work',
+      'Scenario planning or futures work',
+      'Memento mori or death awareness practices',
+      'Energy healing as transformation catalyst',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When something you love — a relationship, chapter, or community — ends:',
+        opts:[
+          {text:'It feels like a failure, a punishment, or evidence that you chose wrong',level:0},
+          {text:'You feel the loss deeply but are starting to separate the ending from your worth',level:1},
+          {text:'You can grieve it cleanly — the ending does not collapse your sense of self or your future',level:2}
+        ]},
+      { q:'Your relationship to the community, lineage, or belief system most important to you:',
+        opts:[
+          {text:'You have never seriously questioned it — leaving would feel like a kind of death',level:0},
+          {text:'You hold it with some critical distance, though questioning it still costs you something',level:1},
+          {text:'You can see it clearly — its gifts and its shadows — and you choose it consciously',level:2}
+        ]},
+      { q:'When you sense significant change coming:',
+        opts:[
+          {text:'Your first move is to control, brace, or catastrophise',level:0},
+          {text:'You feel the anxiety but can usually sit with uncertainty long enough to respond rather than react',level:1},
+          {text:'You move toward the change with curiosity and can hold multiple possible outcomes without panic',level:2}
+        ]},
+      { q:'When a community you belong to becomes divisive or cult-like:',
+        opts:[
+          {text:'You tend to choose loyalty over discernment — the belonging matters more than the clarity',level:0},
+          {text:'You notice it but it takes time before you are willing to name it or act',level:1},
+          {text:'You can see through divisiveness clearly and hold your position even when it costs you belonging',level:2}
+        ]}
+    ]},
+
+  { id:7, arc:'Arc 7 — Attention', name:'The Universe of Attention', legend:'The Fabricator',
+    challenge:'Master presence and self-construction through creative expression. Be fully multidimensional and direct the field of attention — inward and outward — without needing validation to confirm you exist.',
+    wound:'I am only real when I am seen, and only safe when I control how I am seen.',
+    desire:'To create something genuinely new and be fully seen as the person who made it, without the persona collapsing when the spotlight moves.',
+    truth:'Accept yourself as varied. The truth of who you are is already enough.',
+    skills:[
+      'Commanding attention from genuine presence, not performance',
+      'Mirroring others without losing your own signal',
+      'Using humour as connection, not deflection',
+      'Developing charisma and stagecraft as conscious tools',
+      'Creating something genuinely original',
+      'Moving fluidly across identities, timelines, and dimensions'
+    ],
+    modalities:[
+      'Voice and presence coaching',
+      'Improv or theatrical training',
+      'Alter ego development work',
+      'Akashic Records reading or access',
+      'Past life regression',
+      'NLP (anchoring and state management)',
+      'Personal branding or identity design',
+      'Spiritual branding from a grounded self',
+      'Music, visual art, or performance practice',
+      'Time travel or future self access work',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'The version of you that exists in public versus the version at home:',
+        opts:[
+          {text:'Significantly different — the public version is more polished and you are not sure the private one is enough',level:0},
+          {text:'Closer than they used to be — you are working on bringing them into alignment',level:1},
+          {text:'Essentially the same — the performance is an expression of who you are, not a replacement for it',level:2}
+        ]},
+      { q:'When attention moves away from you — to someone else\'s work, idea, or presence:',
+        opts:[
+          {text:'You feel it as a loss and find yourself working to redirect it',level:0},
+          {text:'You notice the impulse but can usually let the attention go to where it belongs',level:1},
+          {text:'You are genuinely glad when the right thing gets attention — including work that is not yours',level:2}
+        ]},
+      { q:'Your creative or expressive work:',
+        opts:[
+          {text:'Is strongly tied to response — the work feels incomplete without an audience',level:0},
+          {text:'Has its own integrity but you are still learning to value it apart from reception',level:1},
+          {text:'Has a life of its own — you would make it even if no one ever saw it',level:2}
+        ]},
+      { q:'When you are in a room and not performing, not producing, not being interesting:',
+        opts:[
+          {text:'It feels uncomfortable — like taking up space without justification',level:0},
+          {text:'You can do it but there is a background hum of monitoring whether you are enough',level:1},
+          {text:'You are simply present — the room does not need you to be anything in particular',level:2}
+        ]}
+    ]},
+
+  { id:8, arc:'Arc 8 — Vision', name:'The Universe of Vision', legend:'The Channeler',
+    challenge:'Master the transmission of vision without imposing it. Hold a strong belief, move mountains, and stay open to a wisdom larger than your own opinion or agenda.',
+    wound:'My vision is the only correct one, and I will burn myself or others to prove it.',
+    desire:'To see clearly, act powerfully, and lead something that actually changes the structure of things.',
+    truth:'The highest collective resonates through every move when you act with intent and release control.',
+    skills:[
+      'Converting belief into action without forcing followers',
+      'Problem-solving without needing to be the fixer',
+      'Taking responsibility without absorbing all blame',
+      'Releasing your plan when something larger emerges',
+      'Building leadership structures and movements',
+      'Receiving and transmitting a specific frequency as service'
+    ],
+    modalities:[
+      'Conscious leadership frameworks',
+      'Integral theory or developmental frameworks',
+      'Gene Keys (Incarnation Cross and destiny work)',
+      'Prophetic or channeling traditions',
+      'Organisational design or systems change',
+      'Activism or social movement theory',
+      'Astrology (outer planets and generational cycles)',
+      'Sacred geometry or pattern transmission',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'When you can clearly see a better way than the one being taken:',
+        opts:[
+          {text:'You push your approach hard — the right answer matters more than the relationship',level:0},
+          {text:'You advocate for it but can let it go if the group decides differently',level:1},
+          {text:'You offer it clearly once, make it available, and trust the larger intelligence to use it or not',level:2}
+        ]},
+      { q:'There is a wisdom source larger than your individual thinking. Your relationship to it:',
+        opts:[
+          {text:'Mostly theoretical — in practice your own judgment is what you trust',level:0},
+          {text:'Real but inconsistent — you access it in good moments but forget it when pressure builds',level:1},
+          {text:'Integrated — you consult it regularly and have learned to trust what comes through',level:2}
+        ]},
+      { q:'When committed to a vision or cause, your relationship to your own wellbeing:',
+        opts:[
+          {text:'Secondary — the vision matters more and you sacrifice yourself for it without much thought',level:0},
+          {text:'Something you are learning to protect — you are getting better at sustainable commitment',level:1},
+          {text:'Non-negotiable — you have learned that self-destruction does not serve the vision',level:2}
+        ]},
+      { q:'Your capacity to follow someone else\'s lead when you disagree with their approach:',
+        opts:[
+          {text:'Low — it is genuinely difficult to subordinate your judgment to someone else\'s',level:0},
+          {text:'Developing — you can do it in the right conditions but it takes effort',level:1},
+          {text:'Solid — you can follow with full commitment when you trust the direction or the person',level:2}
+        ]}
+    ]},
+
+  { id:9, arc:'Arc 9 — Embodiment', name:'The Universe of Embodiment', legend:'The Architect',
+    challenge:'Master creation itself: bring imagination into physical reality without destroying, escaping, or questioning it into paralysis. Build the life, body, and world you can actually inhabit.',
+    wound:'Creation destroys. I destroy what I build, or entropy gets there first.',
+    desire:'To build a life and body of work they can actually inhabit, without it falling apart through bad luck, self-sabotage, or entropy before it becomes real.',
+    truth:'Life is resistance. Resistance is creation. Creation unites freedom and love.',
+    skills:[
+      'Channelling destructive energy into deliberate transformation',
+      'Challenging assumptions without stalling action',
+      'Tolerating the full range of experience without escaping',
+      'Finding a healthy portal instead of a consuming one',
+      'Bringing imagination into physical reality consciously',
+      'Harvesting wisdom from lived experience'
+    ],
+    modalities:[
+      'Somatic experiencing or body-based therapy',
+      'Yoga or tantra (body as primary instrument)',
+      'Advanced manifestation practices',
+      'Biohacking or longevity work',
+      'Ancestral healing',
+      'Dreamwork or lucid dreaming',
+      'Land or place-based practices',
+      'Sexuality or pleasure-based embodiment work',
+      'None of these yet'
+    ],
+    skillQuestions:[
+      { q:'You have a pattern of things almost working and then not, without a clear reason why. How familiar is this?',
+        opts:[
+          {text:'Very — it is one of the defining frustrations of my life',level:0},
+          {text:'Somewhat — I can see the pattern but I am getting better at catching it',level:1},
+          {text:'Rarely now — I have developed enough self-awareness to interrupt it before it completes',level:2}
+        ]},
+      { q:'Your body and physical experience of being alive:',
+        opts:[
+          {text:'Something to manage, optimise, escape from, or endure — not primarily a home',level:0},
+          {text:'Getting more integrated — you are learning to inhabit it more fully',level:1},
+          {text:'Your primary instrument — you trust it, live in it, and it informs your work',level:2}
+        ]},
+      { q:'Your relationship to pleasure — physical, sensory, and otherwise:',
+        opts:[
+          {text:'Something you earn, ration, or feel vaguely guilty about — not freely given to yourself',level:0},
+          {text:'Improving — you are learning to allow it but it does not yet come naturally',level:1},
+          {text:'A practice — you treat pleasure as a legitimate resource for staying present and creative',level:2}
+        ]},
+      { q:'When something you have built gets close to working:',
+        opts:[
+          {text:'Something in you tends to derail it — through action, inaction, or a decision that lands badly',level:0},
+          {text:'You are aware of the pattern and mostly catch it, though not always before the damage',level:1},
+          {text:'You can inhabit the success — you have learned to let things actually land',level:2}
+        ]}
+    ]}
+];
+
+const detectionQuestions = [
+  { text:'The friction that shows up most consistently in your life right now:',
+    opts:[
+      {text:'Navigating rooms, systems, or relationships where rank is invisible but everything depends on it',arcs:{1:3}},
+      {text:'Running on empty while wondering why receiving feels harder than giving',arcs:{2:3}},
+      {text:'Working harder than anyone around you and still feeling like the resources are not arriving fairly',arcs:{3:3}},
+      {text:'Knowing yourself deeply in theory but struggling to commit, land, or stay',arcs:{4:3}},
+      {text:'Understanding everything intellectually but not being able to feel it or act from it',arcs:{5:3}},
+      {text:'Watching something you love ending or changing and not being able to move through it cleanly',arcs:{6:3}},
+      {text:'Creating excellent work or a compelling persona but not being sure who you are when it stops running',arcs:{7:3}},
+      {text:'Having a vision that is real and large and not being able to transmit it without forcing or burning out',arcs:{8:3}},
+      {text:'Starting things, almost finishing them, and watching them quietly unravel before they become real',arcs:{9:3}}
+    ]},
+  { text:'The thing you most want to master — not the surface version, the actual one:',
+    opts:[
+      {text:'Belonging to yourself so completely that hierarchy cannot move you',arcs:{1:3}},
+      {text:'Giving from genuine fullness rather than from guilt or the fear of being left',arcs:{2:3}},
+      {text:'Creating abundance that flows outward without depending on your exhaustion to generate it',arcs:{3:3}},
+      {text:'Knowing yourself so well that no context, person, or system can destabilise the thread',arcs:{4:3}},
+      {text:'Integrating your full emotional and intellectual range so both are available at once',arcs:{5:3}},
+      {text:'Moving through transformation — including endings — without losing yourself or the people who matter',arcs:{6:3}},
+      {text:'Creating something genuinely new and being fully seen as the person who made it',arcs:{7:3}},
+      {text:'Channelling a vision that is larger than your opinion and transmitting it without imposition',arcs:{8:3}},
+      {text:'Building a life you can actually inhabit without entropy, self-sabotage, or paralysis taking it apart',arcs:{9:3}}
+    ]},
+  { text:'When you are at your lowest, the thought that tends to arrive:',
+    opts:[
+      {text:'"I work so hard to earn my place and it still does not feel like mine"',arcs:{1:3,4:1}},
+      {text:'"I have given so much. I do not know what is left"',arcs:{2:3,1:1}},
+      {text:'"I deserve more than this. I have worked too hard for this result"',arcs:{3:3,2:1}},
+      {text:'"I do not actually know who I am underneath all of this"',arcs:{4:3,7:1}},
+      {text:'"I understand exactly what is happening and I still cannot change it"',arcs:{5:3,8:1}},
+      {text:'"Everything I love eventually ends or changes and I do not know how to survive it gracefully"',arcs:{6:3,4:1}},
+      {text:'"I am performing constantly and I am not sure the real version is enough"',arcs:{7:3,1:1}},
+      {text:'"I can see the answer and no one will listen"',arcs:{8:3,5:1}},
+      {text:'"I almost had it. And now I have to start over"',arcs:{9:3,6:1}}
+    ]},
+  { text:'The pattern in how you relate to others that you most want to change:',
+    opts:[
+      {text:'Editing myself based on who is in the room and what they need me to be',arcs:{1:3}},
+      {text:'Giving until I resent it, then withdrawing, then starting again',arcs:{2:3}},
+      {text:'Keeping a mental account of who has contributed what and whether I am getting a fair return',arcs:{3:3}},
+      {text:'Attracting people who feel like home and then watching them leave or disappoint',arcs:{4:3}},
+      {text:'Going cold or intellectual when things get emotionally intense',arcs:{5:3}},
+      {text:'Needing my community to stay the same to feel safe — and being destabilised when it shifts',arcs:{6:3}},
+      {text:'Monitoring whether I am holding people\'s attention even when I am trying not to',arcs:{7:3}},
+      {text:'Knowing what someone needs better than they do and struggling not to act on it uninvited',arcs:{8:3}},
+      {text:'Starting something with someone and losing momentum or derailing it before it becomes real',arcs:{9:3}}
+    ]},
+  { text:'Your honest relationship to structure, commitment, and completion:',
+    opts:[
+      {text:'I follow the structure carefully but I track whether others are meeting the same standard',arcs:{1:3,5:1}},
+      {text:'I commit fully but monitor whether the effort is being matched or acknowledged',arcs:{2:3,3:1}},
+      {text:'I work extremely hard within structure but I need to see the return to keep going',arcs:{3:3,2:1}},
+      {text:'Structure and commitment feel like cages — the open door is more appealing than the room',arcs:{4:3,9:1}},
+      {text:'I plan and analyse extensively before committing — I need to understand it fully first',arcs:{5:3,8:1}},
+      {text:'I commit deeply but hold on longer than I should when things start to shift',arcs:{6:3,1:1}},
+      {text:'I start with energy, reframe when momentum drops, and avoid the part where I have to finish quietly',arcs:{7:3,4:1}},
+      {text:'I commit to the vision completely — sometimes at cost to everything else',arcs:{8:3,6:1}},
+      {text:'I begin with genuine intention and frequently watch the completion slip away for reasons I cannot fully explain',arcs:{9:3,7:1}}
+    ]},
+  { text:'The deepest fear underneath the one you usually name:',
+    opts:[
+      {text:'That I am only welcome here conditionally and I will eventually fail the condition',arcs:{1:3}},
+      {text:'That my sacrifice will be used up and discarded and I will have nothing left',arcs:{2:3}},
+      {text:'That someone will gain access to what I have worked for without earning it the way I did',arcs:{3:3}},
+      {text:'That the real me — unperformed and unpolished — is not actually loveable',arcs:{4:3,7:1}},
+      {text:'That knowing is not enough and when I am required to act from feeling I will fail completely',arcs:{5:3}},
+      {text:'That the thing I have committed to most fully will end and I will not survive the ending',arcs:{6:3}},
+      {text:'That without the performance there is nothing — and everyone will eventually see that',arcs:{7:3,4:1}},
+      {text:'That I will spend my life in service of a vision that no one else can see',arcs:{8:3}},
+      {text:'That I will never become anything — just a series of starts and collapses with nothing to show',arcs:{9:3}}
+    ]}
+];
+
+const disambigPairs = {
+  '1-2':{ q:'When you are depleted in a relationship, what is more accurate?',
+    opts:[{text:'I gave too much — I kept contributing and the contribution was not matched or noticed',universe:2},{text:'I edited myself too much — I kept managing how I showed up so I would not lose my place',universe:1}]},
+  '1-4':{ q:'The harder question for you right now:',
+    opts:[{text:'"Do I belong here?" — the room, the relationship, the role',universe:1},{text:'"Who am I, really?" — underneath the frameworks, the growth work, the personas',universe:4}]},
+  '1-6':{ q:'The more accurate fear:',
+    opts:[{text:'That I will be excluded or found unworthy of the group',universe:1},{text:'That the group itself will end or change beyond recognition',universe:6}]},
+  '2-4':{ q:'What is closer to your actual exhaustion pattern?',
+    opts:[{text:'I give until I collapse — the energy flows out and does not come back',universe:2},{text:'I wait to be held — I am looking for someone who will resource and nourish me',universe:4}]},
+  '3-8':{ q:'Your primary lens when thinking about building something:',
+    opts:[{text:'Fairness and access — who has earned what, and how do I create channels so more people get in',universe:3},{text:'Mission and legacy — what structural change needs to happen and how do I lead it',universe:8}]},
+  '4-7':{ q:'The more honest description of why you do your self-development or creative work:',
+    opts:[{text:'To understand who I am — and honestly, to be interesting or loveable enough to keep someone',universe:4},{text:'To construct and express something — the work itself is the point, not the self-knowledge',universe:7}]},
+  '5-9':{ q:'Your overwhelm tends to come from:',
+    opts:[{text:'Emotion breaking through my containment — feeling flooding the intellect unexpectedly',universe:5},{text:'Life exceeding my capacity to inhabit it — things falling apart before I can get a grip',universe:9}]},
+  '6-9':{ q:'When things collapse, it is usually because:',
+    opts:[{text:'Something external changed or ended and I was not able to move with it',universe:6},{text:'Something I was building came apart from the inside — entropy, self-sabotage, or timing I cannot explain',universe:9}]},
+  '7-8':{ q:'The primary arena of your work is:',
+    opts:[{text:'The self — constructing and expressing who I am, making things that are genuinely mine',universe:7},{text:'The structure — transmitting something larger than myself into a world that needs it changed',universe:8}]}
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let scores = {};
+let answers = [];
+let currentQ = 0;
+let winnerUniverse = null;
+let skillAnswers = [];
+let currentSK = 0;
+let disambigAnswers = [];
+let currentD = 0;
+let disambigQueue = [];
+let selectedModalities = [];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function show(screenId) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function initState() {
+  for (var i = 1; i <= 9; i++) scores[i] = 0;
+  answers = [];
+  currentQ = 0;
+  winnerUniverse = null;
+  skillAnswers = [];
+  currentSK = 0;
+  disambigAnswers = [];
+  currentD = 0;
+  disambigQueue = [];
+  selectedModalities = [];
+}
+
+function startQuiz() {
+  initState();
+  show('screen-quiz');
+  renderQ();
+}
+
+function restartQuiz() {
+  show('screen-intro');
+}
+
+// ─── DETECTION ────────────────────────────────────────────────────────────────
+function applyAnswerToScores(qAnswers) {
+  var weights = [3, 2, 1];
+  qAnswers.forEach(function(a, rank) {
+    var w = weights[rank] || 1;
+    Object.entries(a.opt.arcs).forEach(function(entry) {
+      var arc = parseInt(entry[0]);
+      var pts = entry[1];
+      scores[arc] = (scores[arc] || 0) + pts * w;
+    });
+  });
+}
+
+function renderSignalBars() {
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 4);
+  var max = parseInt(sorted[0] ? sorted[0][1] : 1) || 1;
+  var container = document.getElementById('signal-rows');
+  container.innerHTML = '';
+  sorted.forEach(function(entry) {
+    var uid = parseInt(entry[0]);
+    var sc = entry[1];
+    if (sc === 0) return;
+    var u = universes.find(function(x) { return x.id === uid; });
+    if (!u) return;
+    var pct = Math.round(sc / max * 100);
+    var row = document.createElement('div');
+    row.className = 'signal-row';
+    row.innerHTML = '<div class="signal-name">Arc ' + u.id + '</div><div class="signal-track"><div class="signal-fill" style="width:' + pct + '%"></div></div><div class="signal-pct">' + pct + '%</div>';
+    container.appendChild(row);
+  });
+}
+
+function renderQ() {
+  var q = detectionQuestions[currentQ];
+  var total = detectionQuestions.length;
+  document.getElementById('q-counter').textContent = 'Question ' + (currentQ + 1) + ' of ' + total;
+  document.getElementById('prog').style.width = (Math.round((currentQ + 1) / total * 100)) + '%';
+  document.getElementById('phase-text').textContent = currentQ < 2 ? 'Finding your universe' : 'Signal emerging';
+
+  var sigEl = document.getElementById('universe-signal');
+  if (currentQ >= 2) {
+    sigEl.style.display = 'block';
+    renderSignalBars();
+  } else {
+    sigEl.style.display = 'none';
+  }
+
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('sel-count').textContent = '0 of 3 selected';
+
+  var container = document.getElementById('options');
+  container.innerHTML = '';
+  var saved = answers[currentQ] || [];
+
+  q.opts.forEach(function(opt, i) {
+    var btn = document.createElement('button');
+    btn.className = 'opt';
+    var selIdx = saved.findIndex(function(a) { return a.idx === i; });
+    if (selIdx === 0) btn.classList.add('sel-1');
+    if (selIdx === 1) btn.classList.add('sel-2');
+    if (selIdx === 2) btn.classList.add('sel-3');
+    btn.innerHTML = '<span class="sel-badge">' + (selIdx >= 0 ? selIdx + 1 : '○') + '</span><span>' + opt.text + '</span>';
+    btn.onclick = (function(idx, opts) { return function() { toggleOpt(idx, opts); }; })(i, q.opts);
+    container.appendChild(btn);
+  });
+
+  var savedLen = (answers[currentQ] || []).length;
+  if (savedLen > 0) document.getElementById('sel-count').textContent = savedLen + ' of 3 selected';
+
+  document.getElementById('btn-back').disabled = currentQ === 0;
+  document.getElementById('btn-next').disabled = !answers[currentQ] || answers[currentQ].length === 0;
+  document.getElementById('btn-next').textContent = currentQ === detectionQuestions.length - 1 ? 'Continue' : 'Next';
+}
+
+function toggleOpt(idx, opts) {
+  if (!answers[currentQ]) answers[currentQ] = [];
+  var arr = answers[currentQ];
+  var existing = arr.findIndex(function(a) { return a.idx === idx; });
+  if (existing >= 0) {
+    arr.splice(existing, 1);
+  } else {
+    if (arr.length >= 3) return;
+    arr.push({ idx: idx, opt: opts[idx] });
+  }
+  answers[currentQ] = arr;
+  document.getElementById('sel-count').textContent = arr.length + ' of 3 selected';
+  document.querySelectorAll('#options .opt').forEach(function(btn, i) {
+    btn.className = 'opt';
+    var si = arr.findIndex(function(a) { return a.idx === i; });
+    if (si === 0) btn.classList.add('sel-1');
+    if (si === 1) btn.classList.add('sel-2');
+    if (si === 2) btn.classList.add('sel-3');
+    btn.querySelector('.sel-badge').textContent = si >= 0 ? si + 1 : '○';
+  });
+  document.getElementById('btn-next').disabled = arr.length === 0;
+}
+
+function goNext() {
+  var arr = answers[currentQ] || [];
+  if (arr.length === 0) return;
+  applyAnswerToScores(arr);
+  if (currentQ === detectionQuestions.length - 1) {
+    buildDisambigQueue();
+    if (disambigQueue.length > 0) {
+      show('screen-disambig');
+      renderD();
+    } else {
+      finaliseUniverse();
+    }
+    return;
+  }
+  currentQ++;
+  if (!answers[currentQ]) answers[currentQ] = [];
+  renderQ();
+}
+
+function goBack() {
+  if (currentQ > 0) {
+    var arr = answers[currentQ - 1] || [];
+    var weights = [3, 2, 1];
+    arr.forEach(function(a, rank) {
+      var w = weights[rank] || 1;
+      Object.entries(a.opt.arcs).forEach(function(entry) {
+        var arc = parseInt(entry[0]);
+        var pts = entry[1];
+        scores[arc] = Math.max(0, (scores[arc] || 0) - pts * w);
+      });
+    });
+    currentQ--;
+    renderQ();
+  }
+}
+
+// ─── DISAMBIGUATION ──────────────────────────────────────────────────────────
+function buildDisambigQueue() {
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; });
+  var top3 = sorted.slice(0, 3).map(function(entry) { return parseInt(entry[0]); });
+  disambigQueue = [];
+  for (var i = 0; i < top3.length; i++) {
+    for (var j = i + 1; j < top3.length; j++) {
+      var a = top3[i], b = top3[j];
+      var key = Math.min(a, b) + '-' + Math.max(a, b);
+      if (disambigPairs[key]) {
+        disambigQueue.push({ key: key });
+      }
+    }
+  }
+  disambigQueue = disambigQueue.slice(0, 2);
+  currentD = 0;
+  disambigAnswers = [];
+}
+
+function renderD() {
+  if (currentD >= disambigQueue.length) { finaliseUniverse(); return; }
+  var dq = disambigPairs[disambigQueue[currentD].key];
+  var total = disambigQueue.length;
+  document.getElementById('d-counter').textContent = 'Narrowing ' + (currentD + 1) + ' of ' + total;
+  document.getElementById('d-prog').style.width = (Math.round((currentD + 1) / total * 100)) + '%';
+  document.getElementById('d-q-text').textContent = dq.q;
+
+  var container = document.getElementById('d-options');
+  container.innerHTML = '';
+  dq.opts.forEach(function(opt, i) {
+    var btn = document.createElement('button');
+    var isSel = disambigAnswers[currentD] === i;
+    btn.className = 'opt' + (isSel ? ' single-sel' : '');
+    btn.innerHTML = '<span class="sel-badge">' + (isSel ? '✓' : '○') + '</span><span>' + opt.text + '</span>';
+    btn.onclick = (function(idx, universe) {
+      return function() {
+        // Undo previous selection for this question if any
+        if (disambigAnswers[currentD] !== undefined) {
+          var prevOpt = dq.opts[disambigAnswers[currentD]];
+          scores[prevOpt.universe] = Math.max(0, (scores[prevOpt.universe] || 0) - 4);
+        }
+        disambigAnswers[currentD] = idx;
+        scores[universe] = (scores[universe] || 0) + 4;
+        container.querySelectorAll('.opt').forEach(function(b, j) {
+          b.className = 'opt' + (j === idx ? ' single-sel' : '');
+          b.querySelector('.sel-badge').textContent = j === idx ? '✓' : '○';
+        });
+        document.getElementById('d-btn-next').disabled = false;
+      };
+    })(i, opt.universe);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('d-btn-back').disabled = currentD === 0;
+  document.getElementById('d-btn-next').disabled = disambigAnswers[currentD] === undefined;
+  document.getElementById('d-btn-next').textContent = currentD === disambigQueue.length - 1 ? 'Show my universe' : 'Next';
+}
+
+function dGoNext() {
+  if (disambigAnswers[currentD] === undefined) return;
+  currentD++;
+  if (currentD >= disambigQueue.length) { finaliseUniverse(); } else { renderD(); }
+}
+
+function dGoBack() {
+  if (currentD > 0) {
+    // Undo score boost from current question
+    if (disambigAnswers[currentD - 1] !== undefined) {
+      var dq = disambigPairs[disambigQueue[currentD - 1].key];
+      var prevOpt = dq.opts[disambigAnswers[currentD - 1]];
+      scores[prevOpt.universe] = Math.max(0, (scores[prevOpt.universe] || 0) - 4);
+      disambigAnswers.splice(currentD - 1, 1);
+    }
+    currentD--;
+    renderD();
+  }
+}
+
+// ─── FINALISE ─────────────────────────────────────────────────────────────────
+function finaliseUniverse() {
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; });
+  var winnerId = parseInt(sorted[0][0]);
+  winnerUniverse = universes.find(function(u) { return u.id === winnerId; });
+  skillAnswers = [];
+  currentSK = 0;
+  showSkillAssessment();
+}
+
+// ─── SKILL ASSESSMENT ─────────────────────────────────────────────────────────
+function showSkillAssessment() {
+  var u = winnerUniverse;
+  document.getElementById('sk-universe-name').textContent = u.name;
+  document.getElementById('sk-legend-name').textContent = 'Legend: ' + u.legend;
+  document.getElementById('sk-sub').textContent = 'You have landed in ' + u.arc + '. These four questions map which skills you have already developed and which are waiting for you.';
+  show('screen-skill');
+  renderSK();
+}
+
+function renderSK() {
+  var u = winnerUniverse;
+  var q = u.skillQuestions[currentSK];
+  var total = u.skillQuestions.length;
+  document.getElementById('sk-counter').textContent = 'Skill question ' + (currentSK + 1) + ' of ' + total;
+  document.getElementById('sk-prog').style.width = (Math.round((currentSK + 1) / total * 100)) + '%';
+  document.getElementById('sk-q-text').textContent = q.q;
+
+  var container = document.getElementById('sk-options');
+  container.innerHTML = '';
+  q.opts.forEach(function(opt, i) {
+    var btn = document.createElement('button');
+    var isSel = skillAnswers[currentSK] === i;
+    btn.className = 'opt' + (isSel ? ' single-sel' : '');
+    btn.innerHTML = '<span class="sel-badge">' + (isSel ? '✓' : '○') + '</span><span>' + opt.text + '</span>';
+    btn.onclick = (function(idx) {
+      return function() {
+        skillAnswers[currentSK] = idx;
+        container.querySelectorAll('.opt').forEach(function(b, j) {
+          b.className = 'opt' + (j === idx ? ' single-sel' : '');
+          b.querySelector('.sel-badge').textContent = j === idx ? '✓' : '○';
+        });
+        document.getElementById('sk-btn-next').disabled = false;
+      };
+    })(i);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('sk-btn-back').disabled = currentSK === 0;
+  document.getElementById('sk-btn-next').disabled = skillAnswers[currentSK] === undefined;
+  document.getElementById('sk-btn-next').textContent = currentSK === total - 1 ? 'Next' : 'Next';
+}
+
+function skGoNext() {
+  if (skillAnswers[currentSK] === undefined) return;
+  if (currentSK === winnerUniverse.skillQuestions.length - 1) {
+    showModalities();
+    return;
+  }
+  currentSK++;
+  renderSK();
+}
+
+function skGoBack() {
+  if (currentSK > 0) { currentSK--; renderSK(); }
+}
+
+// ─── MODALITIES ───────────────────────────────────────────────────────────────
+function showModalities() {
+  var u = winnerUniverse;
+  document.getElementById('mod-universe-name').textContent = u.name;
+  document.getElementById('mod-legend-name').textContent = 'Legend: ' + u.legend;
+  selectedModalities = [];
+  renderModalities();
+  show('screen-modalities');
+}
+
+function renderModalities() {
+  var u = winnerUniverse;
+  var container = document.getElementById('mod-options');
+  container.innerHTML = '';
+  u.modalities.forEach(function(mod, i) {
+    var btn = document.createElement('button');
+    var isSel = selectedModalities.indexOf(i) >= 0;
+    btn.className = 'opt' + (isSel ? ' mod-sel' : '');
+    btn.innerHTML = '<span class="sel-badge">' + (isSel ? '✓' : '○') + '</span><span>' + mod + '</span>';
+    btn.onclick = (function(idx, modName) {
+      return function() {
+        var isNone = modName === 'None of these yet';
+        var noneIdx = u.modalities.indexOf('None of these yet');
+        if (isNone) {
+          selectedModalities = (selectedModalities.indexOf(idx) >= 0) ? [] : [idx];
+        } else {
+          var nonePos = selectedModalities.indexOf(noneIdx);
+          if (nonePos >= 0) selectedModalities.splice(nonePos, 1);
+          var pos = selectedModalities.indexOf(idx);
+          if (pos >= 0) { selectedModalities.splice(pos, 1); }
+          else { selectedModalities.push(idx); }
+        }
+        renderModalities();
+      };
+    })(i, mod);
+    container.appendChild(btn);
+  });
+}
+
+function modGoBack() {
+  currentSK = winnerUniverse.skillQuestions.length - 1;
+  show('screen-skill');
+  renderSK();
+}
+
+function modGoNext() {
+  showResult();
+}
+
+// ─── RESULT ───────────────────────────────────────────────────────────────────
+function getSkillLevel() {
+  var u = winnerUniverse;
+  var skillTotal = 0;
+  skillAnswers.forEach(function(ans, qi) {
+    skillTotal += u.skillQuestions[qi].opts[ans].level;
+  });
+  var maxSkill = u.skillQuestions.length * 2;
+  var ratio = skillTotal / maxSkill;
+  return { ratio: ratio, level: ratio < 0.35 ? 'entry' : ratio < 0.7 ? 'developing' : 'legend' };
+}
+
+function showResult() {
+  var u = winnerUniverse;
+  var sk = getSkillLevel();
+  var skillLabels = { entry: 'Entering the Universe', developing: 'Developing the Skills', legend: 'Approaching Legend' };
+
+  document.getElementById('r-eyebrow').textContent = u.arc;
+  document.getElementById('r-universe-name').textContent = u.name;
+  document.getElementById('r-legend-name').textContent = 'Legend: ' + u.legend;
+
+  var badge = document.getElementById('r-level-badge');
+  badge.className = 'result-level-badge level-' + sk.level;
+  badge.textContent = skillLabels[sk.level];
+
+  document.getElementById('r-challenge').textContent = u.challenge;
+  document.getElementById('r-wound').textContent = u.wound;
+  document.getElementById('r-desire').textContent = u.desire;
+  document.getElementById('r-truth').textContent = u.truth;
+
+  // Skill map — 6 skills, 4 assessed directly, 2 inferred from overall ratio
+  var skillsDiv = document.getElementById('r-skills');
+  skillsDiv.innerHTML = '';
+  u.skills.forEach(function(skill, i) {
+    var level;
+    if (i < skillAnswers.length) {
+      level = u.skillQuestions[i].opts[skillAnswers[i]].level;
+    } else {
+      level = sk.ratio < 0.35 ? 0 : sk.ratio < 0.7 ? 1 : 2;
+    }
+    var dotClass = level === 2 ? 'acquired' : level === 1 ? 'developing' : 'unacquired';
+    var statusText = level === 2 ? 'Acquired' : level === 1 ? 'In development' : 'Waiting for you';
+    var item = document.createElement('div');
+    item.className = 'skill-item';
+    item.innerHTML = '<div class="skill-dot ' + dotClass + '"></div><div><div class="skill-text">' + skill + '</div><div class="skill-status ' + dotClass + '">' + statusText + '</div></div>';
+    skillsDiv.appendChild(item);
+  });
+
+  // Modalities
+  var noneIdx = u.modalities.indexOf('None of these yet');
+  var realSel = selectedModalities.filter(function(i) { return i !== noneIdx; });
+  var modSection = document.getElementById('r-mod-section');
+  var modPills = document.getElementById('r-mod-pills');
+  modPills.innerHTML = '';
+  if (realSel.length > 0) {
+    modSection.style.display = 'block';
+    realSel.forEach(function(i) {
+      var pill = document.createElement('span');
+      pill.className = 'mod-pill';
+      pill.textContent = u.modalities[i];
+      modPills.appendChild(pill);
+    });
+  } else {
+    modSection.style.display = 'none';
+  }
+
+  // Universe breakdown bars
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; });
+  var totalSc = Object.values(scores).reduce(function(a, b) { return a + b; }, 0) || 1;
+  var breakdown = document.getElementById('r-breakdown');
+  breakdown.innerHTML = '';
+  sorted.slice(0, 5).forEach(function(entry) {
+    var uid = parseInt(entry[0]);
+    var sc = entry[1];
+    var univ = universes.find(function(x) { return x.id === uid; });
+    if (!univ || sc === 0) return;
+    var pct = Math.round(sc / totalSc * 100);
+    var isTop = uid === u.id;
+    var arcLabel = u.arc.split('—')[1] ? u.arc.split('—')[1].trim() : '';
+    var univLabel = univ.arc.split('—')[1] ? univ.arc.split('—')[1].trim() : '';
+    var row = document.createElement('div');
+    row.className = 'arc-row';
+    row.innerHTML = '<div class="arc-lbl">Arc ' + univ.id + ' · ' + univLabel + '</div><div class="arc-track"><div class="arc-fill' + (isTop ? ' is-top' : '') + '" style="width:' + pct + '%"></div></div><div class="arc-pct">' + pct + '%</div>';
+    breakdown.appendChild(row);
+  });
+
+  document.getElementById('gate-name').value = '';
+  document.getElementById('gate-email').value = '';
+  document.getElementById('kit-output').style.display = 'none';
+
+  show('screen-result');
+}
+
+// ─── KIT SUBMISSION ───────────────────────────────────────────────────────────
+async function submitEmail() {
+  var name = document.getElementById('gate-name').value.trim();
+  var email = document.getElementById('gate-email').value.trim();
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+
+  var u = winnerUniverse;
+  var sk = getSkillLevel();
+  var skillLevel = sk.level === 'entry' ? 'Entry' : sk.level === 'developing' ? 'Developing' : 'Legend';
+
+  var noneIdx = u.modalities.indexOf('None of these yet');
+  var realSel = selectedModalities.filter(function(i) { return i !== noneIdx; });
+  var modalitiesStr = realSel.length > 0 ? realSel.map(function(i) { return u.modalities[i]; }).join(', ') : 'None selected';
+
+  var sorted = Object.entries(scores).sort(function(a, b) { return b[1] - a[1]; });
+  var totalSc = Object.values(scores).reduce(function(a, b) { return a + b; }, 0) || 1;
+  var breakdownStr = sorted.slice(0, 3).map(function(entry) {
+    var uid = parseInt(entry[0]);
+    var sc = entry[1];
+    var univ = universes.find(function(x) { return x.id === uid; });
+    return 'Arc ' + uid + ':' + Math.round(sc / totalSc * 100) + '%';
+  }).join(', ');
+
+  var kitBox = document.getElementById('kit-output');
+  var submitBtn = document.querySelector('.email-gate .btn.primary');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  try {
+    var response = await fetch('https://api.convertkit.com/v3/forms/9272267/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: '0BPlyKxmCmLH7f7XDvrqsg',
+        first_name: name || '',
+        email: email,
+        fields: {
+          legend_universe: u.name,
+          legend_arc: u.arc,
+          legend_legend: u.legend,
+          legend_skill_level: skillLevel,
+          legend_breakdown: breakdownStr,
+          legend_modalities: modalitiesStr
+        }
+      })
+    });
+    var data = await response.json();
+    console.log('Kit response:', JSON.stringify(data));
+    if (data.subscription) {
+      var tagNames = ['Legend Quiz - Completed', 'Legend Quiz - ' + u.legend, 'Legend - ' + skillLevel];
+      await Promise.all(tagNames.map(function(tagName) {
+        return fetch('https://api.convertkit.com/v3/tags', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ api_secret: '1u8mzG7FCdtT0GlFEvepW5yzUrrBTDHGrS4SM0rw55A', name: tagName })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(tagData) {
+          if (tagData.tag) {
+            return fetch('https://api.convertkit.com/v3/tags/' + tagData.tag.id + '/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ api_secret: '1u8mzG7FCdtT0GlFEvepW5yzUrrBTDHGrS4SM0rw55A', email: email })
+            });
+          }
+        });
+      }));
+      kitBox.style.display = 'block';
+      kitBox.innerHTML = '<strong>You\'re in.</strong> Your Legend Universe profile is on its way to ' + email + '.';
+      submitBtn.textContent = 'Sent';
+    } else {
+      throw new Error(JSON.stringify(data));
+    }
+  } catch(err) {
+    console.error('Kit error:', err);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send it';
+    kitBox.style.display = 'block';
+    kitBox.innerHTML = 'Something went wrong — ' + err.message;
+  }
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+initState();
+</script>
+</body>
+</html>
